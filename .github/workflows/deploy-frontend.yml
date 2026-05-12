@@ -1,0 +1,60 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'PSF_APP/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+env:
+  AWS_REGION: ap-northeast-2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: 'PSF_APP/package-lock.json'
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Install Dependencies
+      run: |
+        cd PSF_APP
+        npm ci
+
+    - name: Build Application
+      run: |
+        cd PSF_APP
+        npm run build
+      env:
+        # 프로덕션 환경변수 강제 주입
+        VITE_API_BASE_URL: https://api.psfapp.cloud/api
+        VITE_WS_URL: wss://api.psfapp.cloud/ws
+
+    - name: Deploy to S3
+      env:
+        S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
+      run: |
+        cd PSF_APP/dist
+        aws s3 sync . s3://$S3_BUCKET --delete
+
+    - name: Invalidate CloudFront Cache
+      env:
+        DISTRIBUTION_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      run: |
+        aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
