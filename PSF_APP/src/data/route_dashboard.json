@@ -1,0 +1,47 @@
+{
+    "__mock": {
+        "mode": "success"
+    },
+    "stats": {
+        "total": 120,
+        "attended": 105,
+        "missing": 15
+    },
+    "guideLocations": [
+        {
+            "id": "guide1",
+            "name": "김인솔 (Team A)",
+            "team": "Team A",
+            "address": "해운대구 중동 1로 35",
+            "status": "active"
+        },
+        {
+            "id": "guide2",
+            "name": "이인솔 (Team B)",
+            "team": "Team B",
+            "address": "해운대구 APEC로 55 (벡스코)",
+            "status": "active"
+        },
+        {
+            "id": "guide3",
+            "name": "박인솔 (Team C)",
+            "team": "Team C",
+            "address": "해운대구 달맞이길 30",
+            "status": "idle"
+        }
+    ],
+    "notes": [
+        {
+            "id": 1,
+            "author": "박의전",
+            "content": "John Doe (Team A) — 알러지로 조식 제외 요청 (견과류)",
+            "time": "10:30"
+        },
+        {
+            "id": 2,
+            "author": "김의전",
+            "content": "이참석 (Team B) — 오후 세션 불참 예정, 개인 사정",
+            "time": "09:15"
+        }
+    ]
+}

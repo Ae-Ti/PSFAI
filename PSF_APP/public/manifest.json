@@ -1,0 +1,23 @@
+{
+    "name": "PSF 포럼 운영 지원 앱",
+    "short_name": "PSF Forum",
+    "description": "포럼 참석자, 인솔자, 의전, 본부 운영 지원 애플리케이션",
+    "start_url": "/home",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#0056b3",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon.svg",
+            "sizes": "192x192 512x512",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        }
+    ]
+}

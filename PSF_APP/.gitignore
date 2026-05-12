@@ -1,0 +1,19 @@
+# Vercel
+.vercel
+
+# 의존성
+node_modules/
+
+# 빌드 결과물
+dist/
+
+# 로그
+*.log
+npm-debug.log*
+
+# 로컬 환경 캐시
+.vite/
+
+# 임시 테스트 파일
+TestHash.java
+

@@ -1,0 +1,28 @@
+services:
+  # ── Nginx 컨테이너 ──────────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro        # Let's Encrypt 인증서 공유
+      - /var/www/certbot:/var/www/certbot:ro         # ACME 챌린지 경로 공유
+    depends_on:
+      - backend
+    restart: always
+
+  # ── Spring Boot 컨테이너 ────────────────────────────────────
+  backend:
+    image: 605345905503.dkr.ecr.ap-northeast-2.amazonaws.com/psf-backend:latest
+    expose:
+      - "8080"                                       # 외부 직접 접근 차단, Nginx에서만 접근
+    env_file:
+      - .env.production                              # 환경변수 파일 (Git에 올리지 않음)
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"                              # 파일당 최대 10MB
+        max-file: "3"                                # 최대 3개 보관 (총 30MB)

@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    # AWS RDS 엔드포인트 주소는 환경 변수 ${DB_URL}에서 읽어옵니다.
+    url: jdbc:postgresql://${DB_URL}:5432/psf
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      # 운영 환경에서도 테이블이 없을 경우 자동으로 생성하도록 update로 설정합니다.
+      ddl-auto: update
+    show-sql: false

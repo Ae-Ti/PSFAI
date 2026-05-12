@@ -1,0 +1,112 @@
+{
+    "contacts": [
+        {
+            "id": "c1",
+            "name": "John Doe",
+            "role": "참석자",
+            "team": "Team A",
+            "phone": "010-1234-5678",
+            "email": "john@psf.kr",
+            "emoji": "🙋"
+        },
+        {
+            "id": "c2",
+            "name": "Marie Dubois",
+            "role": "참석자",
+            "team": "Team A",
+            "phone": "010-1235-5679",
+            "email": "marie@psf.kr",
+            "emoji": "🙋"
+        },
+        {
+            "id": "c3",
+            "name": "이참석",
+            "role": "참석자",
+            "team": "Team B",
+            "phone": "010-2345-6780",
+            "email": "lee.p@psf.kr",
+            "emoji": "🙋"
+        },
+        {
+            "id": "c4",
+            "name": "박참석",
+            "role": "참석자",
+            "team": "Team C",
+            "phone": "010-3456-7891",
+            "email": "park.p@psf.kr",
+            "emoji": "🙋"
+        },
+        {
+            "id": "c5",
+            "name": "김인솔",
+            "role": "인솔자",
+            "team": "Team A",
+            "phone": "010-4567-8902",
+            "email": "guide_a@psf.kr",
+            "emoji": "🧭"
+        },
+        {
+            "id": "c6",
+            "name": "이인솔",
+            "role": "인솔자",
+            "team": "Team B",
+            "phone": "010-5678-9013",
+            "email": "guide_b@psf.kr",
+            "emoji": "🧭"
+        },
+        {
+            "id": "c7",
+            "name": "박인솔",
+            "role": "인솔자",
+            "team": "Team C",
+            "phone": "010-6789-0124",
+            "email": "guide_c@psf.kr",
+            "emoji": "🧭"
+        },
+        {
+            "id": "c8",
+            "name": "박의전",
+            "role": "의전",
+            "team": "Team A",
+            "phone": "010-7890-1235",
+            "email": "escort_a@psf.kr",
+            "emoji": "🚗"
+        },
+        {
+            "id": "c9",
+            "name": "김의전",
+            "role": "의전",
+            "team": "Team B",
+            "phone": "010-8901-2346",
+            "email": "escort_b@psf.kr",
+            "emoji": "🚗"
+        },
+        {
+            "id": "c10",
+            "name": "이의전",
+            "role": "의전",
+            "team": "Team C",
+            "phone": "010-9012-3457",
+            "email": "escort_c@psf.kr",
+            "emoji": "🚗"
+        },
+        {
+            "id": "c11",
+            "name": "최운영",
+            "role": "사무국",
+            "team": "All",
+            "phone": "010-0123-4568",
+            "email": "hq@psf.kr",
+            "emoji": "🏢"
+        },
+        {
+            "id": "c12",
+            "name": "김운영",
+            "role": "사무국",
+            "team": "All",
+            "phone": "010-1230-4569",
+            "email": "hq2@psf.kr",
+            "emoji": "🏢"
+        }
+    ]
+}

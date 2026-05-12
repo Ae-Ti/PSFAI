@@ -1,0 +1,39 @@
+spring:
+  profiles:
+    active: local # 기본 프로파일을 local로 설정
+  
+  # 공통 JPA 설정
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  sql:
+    init:
+      mode: always
+  ai:
+    google:
+      genai:
+        api-key: "${GEMINI_API_KEY:REMOVED_API_KEY}"
+        chat:
+          options:
+            model: "gemini-3.1-flash-lite-preview"
+            temperature: 0.7
+    retry:
+      max-attempts: 1         # 1 = 재시도 없이 1번만 시도 (Spring AI 최솟값)
+      on-client-errors-no-retry: true   # 4xx 클라이언트 에러(429 포함)는 재시도 안 함
+
+jwt:
+  secret: ${JWT_SECRET:REMOVED_JWT_SECRET}
+  expiration-ms: 86400000   # 24시간
+
+server:
+  port: ${PORT:8080}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.ai: WARN
+    org.hibernate.SQL: WARN
+    com.psf: INFO
+    org.springframework.security: WARN

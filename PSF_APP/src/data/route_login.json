@@ -1,0 +1,43 @@
+{
+    "__mock": {
+        "mode": "success"
+    },
+    "users": [
+        {
+            "id": "user1",
+            "role": "참석자",
+            "name": "John Doe",
+            "team": "Team A",
+            "emoji": "🙋",
+            "username": "user1",
+            "password": "1234"
+        },
+        {
+            "id": "guide1",
+            "role": "인솔자",
+            "name": "김인솔",
+            "team": "Team A",
+            "emoji": "🧭",
+            "username": "guide1",
+            "password": "1234"
+        },
+        {
+            "id": "escort1",
+            "role": "의전",
+            "name": "박의전",
+            "team": "Team A",
+            "emoji": "🚗",
+            "username": "escort1",
+            "password": "1234"
+        },
+        {
+            "id": "hq1",
+            "role": "사무국",
+            "name": "최운영",
+            "team": "All",
+            "emoji": "🏢",
+            "username": "hq1",
+            "password": "1234"
+        }
+    ]
+}
