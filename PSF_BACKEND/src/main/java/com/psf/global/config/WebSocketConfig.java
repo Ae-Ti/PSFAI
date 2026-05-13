@@ -19,7 +19,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins(
                     "http://localhost:5173",
-                    "http://localhost",           // Android Capacitor 앱
+                    "http://localhost",           // Android Capacitor 앱 (HTTP)
+                    "https://localhost",          // Android Capacitor 앱 (HTTPS Scheme)
                     "http://<S3_BUCKET_NAME>.s3-website.ap-northeast-2.amazonaws.com",
                     "https://api.psfapp.cloud",
                     "https://psfapp.cloud"
