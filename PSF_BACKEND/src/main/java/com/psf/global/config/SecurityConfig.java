@@ -50,13 +50,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-            "http://localhost:5173", // 로컬 테스트용
-            "http://<S3_BUCKET_NAME>.s3-website.ap-northeast-2.amazonaws.com", // S3 직접 접속용
-            "https://api.psfapp.cloud", // 신규 API 도메인
-            "https://psfapp.cloud" // (혹시 사용하실) 메인 도메인
+            "http://localhost:5173",       // 로컬 테스트용
+            "http://localhost",            // Android Capacitor 앱
+            "http://<S3_BUCKET_NAME>.s3-website.ap-northeast-2.amazonaws.com",
+            "https://api.psfapp.cloud",
+            "https://psfapp.cloud"
         ));
         config.setAllowedOriginPatterns(List.of(
-            "https://*.cloudfront.net" // 모든 CloudFront 도메인 허용
+            "https://*.cloudfront.net",   // 모든 CloudFront 도메인
+            "capacitor://*"               // iOS Capacitor 앱
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));

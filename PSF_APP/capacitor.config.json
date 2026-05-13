@@ -1,0 +1,13 @@
+{
+  "appId": "cloud.psfapp.app",
+  "appName": "PSF Forum",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Geolocation": {
+      "permissions": ["location"]
+    }
+  }
+}

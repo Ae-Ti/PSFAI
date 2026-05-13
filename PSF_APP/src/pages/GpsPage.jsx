@@ -4,6 +4,7 @@ import Header from '../components/Header'
 import BottomNav from '../components/BottomNav'
 import { useEffect, useRef } from 'react'
 import { updateGpsLocation } from '../api/gps'
+import { Geolocation } from '@capacitor/geolocation'
 
 const MAP_LINES_H = [20, 40, 60, 80]
 const MAP_LINES_V = [20, 40, 60, 80]
@@ -41,28 +42,28 @@ export default function GpsPage() {
     // Initialize Naver Map and Geolocation in parallel
     useEffect(() => {
         // 1. Start getting location immediately for faster UX
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((pos) => {
-                const { latitude, longitude } = pos.coords;
-                lastCoordsRef.current = { latitude, longitude };
-                
-                // Update map if it exists
-                if (window.naver && window.naver.maps) {
-                    const loc = new window.naver.maps.LatLng(latitude, longitude);
-                    if (mapRef.current) mapRef.current.setCenter(loc);
-                    if (markerRef.current) markerRef.current.setPosition(loc);
-                }
+        Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 60000
+        }).then((pos) => {
+            const { latitude, longitude } = pos.coords;
+            lastCoordsRef.current = { latitude, longitude };
 
-                // Fetch address immediately
-                if (window.naver && window.naver.maps && window.naver.maps.Service) {
-                    fetchAddress(latitude, longitude);
-                }
-            }, null, { 
-                enableHighAccuracy: true, 
-                timeout: 5000, 
-                maximumAge: 60000 
-            });
-        }
+            // Update map if it exists
+            if (window.naver && window.naver.maps) {
+                const loc = new window.naver.maps.LatLng(latitude, longitude);
+                if (mapRef.current) mapRef.current.setCenter(loc);
+                if (markerRef.current) markerRef.current.setPosition(loc);
+            }
+
+            // Fetch address immediately
+            if (window.naver && window.naver.maps && window.naver.maps.Service) {
+                fetchAddress(latitude, longitude);
+            }
+        }).catch((err) => {
+            console.warn('Initial position fetch failed:', err);
+        });
 
         // 2. Map rendering logic
         const renderMap = () => {
@@ -117,15 +118,15 @@ export default function GpsPage() {
         let uiInterval = null;
         if (isGpsSending) {
             uiInterval = setInterval(() => {
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition((pos) => {
+                Geolocation.getCurrentPosition({ enableHighAccuracy: true })
+                    .then((pos) => {
                         const { latitude, longitude } = pos.coords;
                         const latlng = new window.naver.maps.LatLng(latitude, longitude);
                         if (mapRef.current) mapRef.current.setCenter(latlng);
                         if (markerRef.current) markerRef.current.setPosition(latlng);
                         fetchAddress(latitude, longitude);
-                    });
-                }
+                    })
+                    .catch(console.error);
             }, 10000);
         }
         return () => {

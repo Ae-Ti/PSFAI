@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react'
 import { translations } from '../i18n/translations'
 import { updateGpsLocation } from '../api/gps'
+import { Geolocation } from '@capacitor/geolocation'
 
 const AppContext = createContext(null)
 
@@ -80,65 +81,74 @@ export function AppProvider({ children }) {
                 transmitting: false
             }).catch(console.error);
         } else {
-            // No cached coords — try once with geolocation, short timeout
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        updateGpsLocation({
-                            latitude: pos.coords.latitude,
-                            longitude: pos.coords.longitude,
-                            address: '',
-                            status: 'STOPPED',
-                            transmitting: false
-                        }).catch(console.error);
-                    },
-                    () => console.warn('stopGps: geolocation failed and no cached coords'),
-                    { timeout: 3000, maximumAge: 60000 }
-                );
-            }
+            // No cached coords — try once with Capacitor Geolocation
+            Geolocation.getCurrentPosition({ timeout: 3000, maximumAge: 60000 })
+                .then((pos) => {
+                    updateGpsLocation({
+                        latitude: pos.coords.latitude,
+                        longitude: pos.coords.longitude,
+                        address: '',
+                        status: 'STOPPED',
+                        transmitting: false
+                    }).catch(console.error);
+                })
+                .catch(() => console.warn('stopGps: geolocation failed and no cached coords'));
         }
     };
 
-    const startGps = () => {
+    const startGps = async () => {
         isSendingRef.current = true;
         setIsGpsSending(true);
 
-        const send = () => {
+        // 모바일: 위치 권한 요청 (웹에서는 자동으로 브라우저 권한 팝업)
+        try {
+            await Geolocation.requestPermissions();
+        } catch (e) {
+            console.warn('Permission request not supported on this platform:', e);
+        }
+
+        const send = async () => {
             // Check ref flag so if stopGps was called, this interval callback exits early
             if (!isSendingRef.current) return;
 
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    if (!isSendingRef.current) return; // Check again after async
-                    const { latitude, longitude } = pos.coords;
-                    lastCoordsRef.current = { latitude, longitude };
+            try {
+                const pos = await Geolocation.getCurrentPosition({
+                    enableHighAccuracy: true,
+                    timeout: 8000,
+                    maximumAge: 5000
+                });
 
-                    const sendToBackend = (address) => {
-                        if (!isSendingRef.current) return;
-                        updateGpsLocation({
-                            latitude,
-                            longitude,
-                            address: address || '',
-                            status: 'MOVING',
-                            transmitting: true
-                        }).catch(console.error);
-                    };
+                if (!isSendingRef.current) return; // Check again after async
+                const { latitude, longitude } = pos.coords;
+                lastCoordsRef.current = { latitude, longitude };
 
-                    // Try to get address if Naver Maps is loaded
-                    if (window.naver && window.naver.maps && window.naver.maps.Service) {
-                        const latlng = new window.naver.maps.LatLng(latitude, longitude);
-                        window.naver.maps.Service.reverseGeocode({
-                            coords: latlng,
-                            orders: [window.naver.maps.Service.OrderType.ADDR, window.naver.maps.Service.OrderType.ROAD_ADDR].join(',')
-                        }, (status, response) => {
-                            const result = response?.v2?.address;
-                            const addr = result?.jibunAddress || result?.roadAddress || '';
-                            sendToBackend(addr);
-                        });
-                    } else {
-                        sendToBackend('');
-                    }
-                }, null, { enableHighAccuracy: true, timeout: 8000, maximumAge: 5000 });
+                const sendToBackend = (address) => {
+                    if (!isSendingRef.current) return;
+                    updateGpsLocation({
+                        latitude,
+                        longitude,
+                        address: address || '',
+                        status: 'MOVING',
+                        transmitting: true
+                    }).catch(console.error);
+                };
+
+                // Try to get address if Naver Maps is loaded
+                if (window.naver && window.naver.maps && window.naver.maps.Service) {
+                    const latlng = new window.naver.maps.LatLng(latitude, longitude);
+                    window.naver.maps.Service.reverseGeocode({
+                        coords: latlng,
+                        orders: [window.naver.maps.Service.OrderType.ADDR, window.naver.maps.Service.OrderType.ROAD_ADDR].join(',')
+                    }, (status, response) => {
+                        const result = response?.v2?.address;
+                        const addr = result?.jibunAddress || result?.roadAddress || '';
+                        sendToBackend(addr);
+                    });
+                } else {
+                    sendToBackend('');
+                }
+            } catch (err) {
+                console.error('GPS getCurrentPosition failed:', err);
             }
         };
 
