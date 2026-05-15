@@ -82,7 +82,22 @@ export function AppProvider({ children }) {
             }).catch(console.error);
         } else {
             // No cached coords — try once with Capacitor Geolocation
-            Geolocation.getCurrentPosition({ timeout: 3000, maximumAge: 60000 })
+            const getPos = async () => {
+                try {
+                    const pos = await Geolocation.getCurrentPosition({ timeout: 3000, maximumAge: 60000 });
+                    return pos;
+                } catch (err) {
+                    if (err.message === 'Not implemented on web.' || err.message?.includes('Not implemented')) {
+                        return new Promise((resolve, reject) => {
+                            if (!navigator.geolocation) reject(new Error('Browser does not support geolocation'));
+                            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000, maximumAge: 60000 });
+                        });
+                    }
+                    throw err;
+                }
+            };
+
+            getPos()
                 .then((pos) => {
                     updateGpsLocation({
                         latitude: pos.coords.latitude,
@@ -112,14 +127,33 @@ export function AppProvider({ children }) {
             if (!isSendingRef.current) return;
 
             try {
-                const pos = await Geolocation.getCurrentPosition({
-                    enableHighAccuracy: true,
-                    timeout: 30000,
-                    maximumAge: 5000
-                });
+                let latitude, longitude;
+                try {
+                    const pos = await Geolocation.getCurrentPosition({
+                        enableHighAccuracy: true,
+                        timeout: 30000,
+                        maximumAge: 5000
+                    });
+                    latitude = pos.coords.latitude;
+                    longitude = pos.coords.longitude;
+                } catch (capErr) {
+                    if (capErr.message === 'Not implemented on web.' || capErr.message?.includes('Not implemented')) {
+                        const webPos = await new Promise((resolve, reject) => {
+                            if (!navigator.geolocation) reject(new Error('Browser does not support geolocation'));
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true,
+                                timeout: 30000,
+                                maximumAge: 5000
+                            });
+                        });
+                        latitude = webPos.coords.latitude;
+                        longitude = webPos.coords.longitude;
+                    } else {
+                        throw capErr;
+                    }
+                }
 
                 if (!isSendingRef.current) return; // Check again after async
-                const { latitude, longitude } = pos.coords;
                 lastCoordsRef.current = { latitude, longitude };
 
                 const sendToBackend = (address) => {

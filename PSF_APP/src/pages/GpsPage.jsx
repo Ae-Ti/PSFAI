@@ -44,16 +44,36 @@ export default function GpsPage() {
         // 1. Start getting location immediately for faster UX
         const initLocation = async () => {
             try {
-                // 모바일 환경을 위해 위치 권한 먼저 요청
-                await Geolocation.requestPermissions();
+                let latitude, longitude;
                 
-                const pos = await Geolocation.getCurrentPosition({
-                    enableHighAccuracy: true,
-                    timeout: 30000,
-                    maximumAge: 60000
-                });
+                try {
+                    // Try Capacitor Geolocation first (for native iOS/Android)
+                    await Geolocation.requestPermissions();
+                    const pos = await Geolocation.getCurrentPosition({
+                        enableHighAccuracy: true,
+                        timeout: 30000,
+                        maximumAge: 60000
+                    });
+                    latitude = pos.coords.latitude;
+                    longitude = pos.coords.longitude;
+                } catch (capErr) {
+                    // If not implemented on web or fails, fallback to browser's native API
+                    if (capErr.message === 'Not implemented on web.' || capErr.message?.includes('Not implemented')) {
+                        const webPos = await new Promise((resolve, reject) => {
+                            if (!navigator.geolocation) reject(new Error('Browser does not support geolocation'));
+                            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                                enableHighAccuracy: true,
+                                timeout: 30000,
+                                maximumAge: 60000
+                            });
+                        });
+                        latitude = webPos.coords.latitude;
+                        longitude = webPos.coords.longitude;
+                    } else {
+                        throw capErr;
+                    }
+                }
                 
-                const { latitude, longitude } = pos.coords;
                 lastCoordsRef.current = { latitude, longitude };
 
                 // Update map if it exists
@@ -149,7 +169,22 @@ export default function GpsPage() {
         let uiInterval = null;
         if (isGpsSending) {
             uiInterval = setInterval(() => {
-                Geolocation.getCurrentPosition({ enableHighAccuracy: true })
+                const getPos = async () => {
+                    try {
+                        const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
+                        return pos;
+                    } catch (err) {
+                        if (err.message === 'Not implemented on web.' || err.message?.includes('Not implemented')) {
+                            return new Promise((resolve, reject) => {
+                                if (!navigator.geolocation) reject(new Error('Browser does not support geolocation'));
+                                navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true });
+                            });
+                        }
+                        throw err;
+                    }
+                };
+
+                getPos()
                     .then((pos) => {
                         const { latitude, longitude } = pos.coords;
                         const latlng = new window.naver.maps.LatLng(latitude, longitude);
