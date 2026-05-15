@@ -114,7 +114,7 @@ export function AppProvider({ children }) {
             try {
                 const pos = await Geolocation.getCurrentPosition({
                     enableHighAccuracy: true,
-                    timeout: 8000,
+                    timeout: 30000,
                     maximumAge: 5000
                 });
 

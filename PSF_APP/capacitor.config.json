@@ -3,6 +3,7 @@
   "appName": "PSF Forum",
   "webDir": "dist",
   "server": {
+    "url": "https://psfapp.cloud",
     "androidScheme": "https"
   },
   "plugins": {

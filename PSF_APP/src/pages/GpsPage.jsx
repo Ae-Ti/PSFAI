@@ -42,53 +42,74 @@ export default function GpsPage() {
     // Initialize Naver Map and Geolocation in parallel
     useEffect(() => {
         // 1. Start getting location immediately for faster UX
-        Geolocation.getCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 60000
-        }).then((pos) => {
-            const { latitude, longitude } = pos.coords;
-            lastCoordsRef.current = { latitude, longitude };
+        const initLocation = async () => {
+            try {
+                // 모바일 환경을 위해 위치 권한 먼저 요청
+                await Geolocation.requestPermissions();
+                
+                const pos = await Geolocation.getCurrentPosition({
+                    enableHighAccuracy: true,
+                    timeout: 30000,
+                    maximumAge: 60000
+                });
+                
+                const { latitude, longitude } = pos.coords;
+                lastCoordsRef.current = { latitude, longitude };
 
-            // Update map if it exists
-            if (window.naver && window.naver.maps) {
-                const loc = new window.naver.maps.LatLng(latitude, longitude);
-                if (mapRef.current) mapRef.current.setCenter(loc);
-                if (markerRef.current) markerRef.current.setPosition(loc);
-            }
+                // Update map if it exists
+                if (window.naver && window.naver.maps) {
+                    const loc = new window.naver.maps.LatLng(latitude, longitude);
+                    if (mapRef.current) mapRef.current.setCenter(loc);
+                    if (markerRef.current) markerRef.current.setPosition(loc);
+                }
 
-            // Fetch address immediately
-            if (window.naver && window.naver.maps && window.naver.maps.Service) {
-                fetchAddress(latitude, longitude);
+                // Fetch address immediately
+                if (window.naver && window.naver.maps && window.naver.maps.Service) {
+                    fetchAddress(latitude, longitude);
+                }
+            } catch (err) {
+                console.warn('Initial position fetch failed:', err);
+                alert(`GPS 오류: ${err.message || JSON.stringify(err)}\n(에뮬레이터의 경우 Google Maps 앱을 한 번 실행해주세요)`);
             }
-        }).catch((err) => {
-            console.warn('Initial position fetch failed:', err);
-        });
+        };
+
+        initLocation();
 
         // 2. Map rendering logic
         const renderMap = () => {
             if (mapRef.current) return;
             
-            // Use last known coords or BEXCO as fallback
-            const initialPos = lastCoordsRef.current 
-                ? new window.naver.maps.LatLng(lastCoordsRef.current.latitude, lastCoordsRef.current.longitude)
-                : new window.naver.maps.LatLng(35.1689, 129.1360);
+            try {
+                // Use last known coords or BEXCO as fallback
+                const initialPos = lastCoordsRef.current 
+                    ? new window.naver.maps.LatLng(lastCoordsRef.current.latitude, lastCoordsRef.current.longitude)
+                    : new window.naver.maps.LatLng(35.1689, 129.1360);
 
-            const mapOptions = {
-                center: initialPos,
-                zoom: 15,
-                minZoom: 10,
-                mapTypeControl: true
-            };
-            mapRef.current = new window.naver.maps.Map('map-view', mapOptions);
-            markerRef.current = new window.naver.maps.Marker({
-                position: initialPos,
-                map: mapRef.current,
-            });
+                const mapOptions = {
+                    center: initialPos,
+                    zoom: 15,
+                    minZoom: 10,
+                    mapTypeControl: true
+                };
+                
+                const mapEl = document.getElementById('map-view');
+                if (!mapEl) {
+                    throw new Error('map-view element not found in DOM');
+                }
+                
+                mapRef.current = new window.naver.maps.Map(mapEl, mapOptions);
+                markerRef.current = new window.naver.maps.Marker({
+                    position: initialPos,
+                    map: mapRef.current,
+                });
 
-            // If we already have the address, currentAddress state will handle the UI
-            if (lastCoordsRef.current) {
-                fetchAddress(lastCoordsRef.current.latitude, lastCoordsRef.current.longitude);
+                // If we already have the address, currentAddress state will handle the UI
+                if (lastCoordsRef.current) {
+                    fetchAddress(lastCoordsRef.current.latitude, lastCoordsRef.current.longitude);
+                }
+            } catch (err) {
+                console.error('Failed to render map:', err);
+                alert(`지도 렌더링 실패: ${err.message}`);
             }
         };
 
@@ -102,6 +123,16 @@ export default function GpsPage() {
 
         return () => {
             window.initNaverMap = null;
+            if (mapRef.current) {
+                if (typeof mapRef.current.destroy === 'function') {
+                    mapRef.current.destroy();
+                }
+                mapRef.current = null;
+            }
+            if (markerRef.current) {
+                markerRef.current.setMap(null);
+                markerRef.current = null;
+            }
         };
     }, []);
 
