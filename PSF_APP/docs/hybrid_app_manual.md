@@ -9,25 +9,31 @@
 1. [사전 준비 및 환경 설정](#1-사전-준비-및-환경-설정)
 2. [Capacitor 설치 및 초기 설정](#2-capacitor-설치-및-초기-설정)
 3. [iOS 프로젝트 생성 및 빌드](#3-ios-프로젝트-생성-및-빌드)
-4. [핵심 설정: capacitor.config.json](#4-핵심-설정-capacitorconfigjson)
-5. [네이버 지도 API 연동 문제 해결](#5-네이버-지도-api-연동-문제-해결)
-6. [GPS(위치) 플러그인 연동](#6-gps위치-플러그인-연동)
-7. [웹/앱 환경 분기 처리](#7-웹앱-환경-분기-처리)
-8. [실기기 테스트 방법 (iOS)](#8-실기기-테스트-방법-ios)
-9. [코드 수정 후 앱 업데이트 절차](#9-코드-수정-후-앱-업데이트-절차)
-10. [알려진 이슈 및 FAQ](#10-알려진-이슈-및-faq)
+4. [Android 프로젝트 생성 및 빌드](#4-android-프로젝트-생성-및-빌드)
+5. [핵심 설정: capacitor.config.json](#5-핵심-설정-capacitorconfigjson)
+6. [백엔드 CORS 설정 업데이트](#6-백엔드-cors-설정-업데이트)
+7. [네이버 지도 API 연동 문제 해결](#7-네이버-지도-api-연동-문제-해결)
+8. [GPS(위치) 플러그인 연동](#8-gps위치-플러그인-연동)
+9. [웹/앱 환경 분기 처리](#9-웹앱-환경-분기-처리)
+10. [실기기 테스트 방법 (iOS)](#10-실기기-테스트-방법-ios)
+11. [실기기 테스트 방법 (Android)](#11-실기기-테스트-방법-android)
+12. [코드 수정 후 앱 업데이트 절차](#12-코드-수정-후-앱-업데이트-절차)
+13. [검증 체크리스트](#13-검증-체크리스트)
+14. [알려진 이슈 및 FAQ](#14-알려진-이슈-및-faq)
 
 ---
 
 ## 1. 사전 준비 및 환경 설정
 
 ### 필수 설치 목록
-| 도구 | 설치 방법 | 확인 명령어 |
-|------|-----------|-------------|
-| Node.js 18+ | [nodejs.org](https://nodejs.org) | `node --version` |
-| Xcode 최신버전 | Mac App Store | `xcodebuild -version` |
-| CocoaPods | `sudo gem install cocoapods` | `pod --version` |
-| Capacitor CLI | 프로젝트 내 설치 (아래 참고) | `npx cap --version` |
+| 도구 | 필수 여부 | 확인 명령어 / 비고 |
+|------|-----------|-------------------|
+| Node.js 18+ | **필수** | `node -v` (React 빌드 및 npx 실행용) |
+| Xcode 최신버전 | **iOS 필수** | Mac App Store에서 설치 |
+| Android Studio | **Android 필수** | [공식 홈페이지](https://developer.android.com/studio)에서 설치 |
+| CocoaPods | **iOS 필수** | `pod --version` (iOS 라이브러리 관리) |
+
+> 💡 **이미 설치되어 있나요?** 회원님 컴퓨터에는 이미 Node.js와 CocoaPods가 모두 설치되어 있습니다. `확인 명령어`를 터미널에 쳐서 버전이 나온다면 설치 과정을 건너뛰셔도 됩니다.
 
 ### 맥북 Xcode 최초 설정
 ```bash
@@ -73,6 +79,17 @@ npx cap add ios
 
 > ⚠️ `npx cap add ios` 실행 후 `ios/` 폴더가 생성됨. 이 폴더는 Git에 커밋해도 무방하지만 Xcode 빌드 캐시(`ios/App/build/`)는 `.gitignore`에 추가 권장.
 
+### Android 플랫폼 추가 (최초 1회)
+```bash
+# Android 패키지 설치
+npm install @capacitor/android
+
+# Android 네이티브 프로젝트 생성
+npx cap add android
+```
+
+> ⚠️ `npx cap add android` 실행 후 `android/` 폴더가 생성됩니다.
+
 ---
 
 ## 3. iOS 프로젝트 생성 및 빌드
@@ -98,7 +115,32 @@ npx cap open ios
 
 ---
 
-## 4. 핵심 설정: capacitor.config.json
+## 4. Android 프로젝트 생성 및 빌드
+
+### Android Studio에서 열기
+```bash
+# 터미널에서 실행하면 Android Studio가 자동으로 열림
+npx cap open android
+```
+
+> Android Studio가 설치되어 있지 않은 경우: [developer.android.com/studio](https://developer.android.com/studio) 에서 무료로 다운로드
+
+### Android Studio 초기 설정
+1. Android Studio에서 프로젝트가 열리면 상단에 **"Gradle sync"** 진행 표시가 뜹니다. 완료될 때까지 기다립니다. (최초 1회, 수 분 소요)
+2. 상단 메뉴 **Tools → SDK Manager** 에서 현재 기기에 맞는 Android SDK가 설치되어 있는지 확인합니다.
+
+### Android 에뮬레이터로 실행
+1. 상단 메뉴 **Tools → Device Manager** 클릭
+2. **Create Device** → 원하는 기기(예: Pixel 8) 선택 → 시스템 이미지 다운로드
+3. 생성된 에뮬레이터의 ▶ 버튼으로 에뮬레이터를 켭니다.
+4. Android Studio 상단 기기 드롭다운에서 에뮬레이터 선택 후 **▶ (Run) 버튼** 클릭
+
+### Android 실기기로 실행
+아래 **11번 섹션 '실기기 테스트 방법 (Android)'** 를 참고하세요.
+
+---
+
+## 5. 핵심 설정: capacitor.config.json
 
 이 파일이 하이브리드 앱의 동작 방식을 결정하는 가장 중요한 설정 파일입니다.
 
@@ -143,7 +185,37 @@ npx cap open ios
 
 ---
 
-## 5. 네이버 지도 API 연동 문제 해결
+## 6. 백엔드 CORS 설정 업데이트
+
+Capacitor 앱은 플랫폼에 따라 서로 다른 Origin을 사용합니다.
+Spring Boot 백엔드의 CORS 설정에 아래 주소들을 반드시 추가해야 합니다.
+
+| 환경 | Origin |
+|------|--------|
+| iOS 앱 (기본) | `capacitor://localhost` |
+| Android 앱 (기본) | `http://localhost` |
+| 로컬 개발 | `http://localhost:5173` |
+| 프로덕션 웹 | `https://psfapp.cloud` |
+| CloudFront | `https://*.cloudfront.net` |
+
+### 적용 위치
+백엔드 CORS 설정 파일(예: `WebConfig.java` 또는 `SecurityConfig.java`):
+
+```java
+config.setAllowedOriginPatterns(List.of(
+    "http://localhost:5173",       // 로컬 개발
+    "https://psfapp.cloud",        // 프로덕션 웹
+    "https://*.cloudfront.net",    // CloudFront
+    "capacitor://localhost",        // iOS Capacitor 앱
+    "http://localhost"              // Android Capacitor 앱
+));
+```
+
+> ⚠️ **현재 상태 (2026-05-16 기준)**: `server.url`을 `https://psfapp.cloud`로 설정하여 실서버 도메인을 사용 중이므로 실질적으로 CORS 문제가 발생하지 않습니다. 하지만 향후 오프라인 내장 파일 방식으로 전환하거나 개발 환경에서 테스트할 경우를 대비해 위 설정을 유지하는 것이 좋습니다.
+
+---
+
+## 7. 네이버 지도 API 연동 문제 해결
 
 ### 문제 증상
 ```
@@ -188,7 +260,7 @@ return () => {
 
 ---
 
-## 6. GPS(위치) 플러그인 연동
+## 8. GPS(위치) 플러그인 연동
 
 ### Info.plist 권한 설정 (iOS 필수)
 Xcode에서 `Info.plist` 파일에 위치 권한 메시지를 추가해야 합니다.
@@ -218,7 +290,7 @@ const { latitude, longitude } = pos.coords;
 
 ---
 
-## 7. 웹/앱 환경 분기 처리
+## 9. 웹/앱 환경 분기 처리
 
 ### 문제
 `@capacitor/geolocation`은 iOS/Android 네이티브 앱 전용 플러그인입니다.
@@ -263,7 +335,7 @@ const getPosition = async () => {
 
 ---
 
-## 8. 실기기 테스트 방법 (iOS)
+## 10. 실기기 테스트 방법 (iOS)
 
 ### 준비물
 - 맥북(Mac)
@@ -301,42 +373,106 @@ const getPosition = async () => {
 
 ---
 
-## 9. 코드 수정 후 앱 업데이트 절차
+## 11. 실기기 테스트 방법 (Android)
 
-### 매번 코드를 수정할 때마다 해야 하는 작업 순서
+### 준비물
+- Windows/Mac PC
+- Android 스마트폰
+- USB-C 케이블
+- Android Studio
 
-```bash
-# PSF_APP 디렉토리에서 실행
+### Step 1: 안드로이드 개발자 모드 활성화
+1. 안드로이드 폰 **[설정]** 앱 열기
+2. **[휴대전화 정보]** (또는 '기기 정보') 메뉴 진입
+3. **[소프트웨어 정보]** → **[빌드 번호]** 를 **7번 연속으로 탭**
+4. "개발자 모드가 활성화되었습니다" 메시지 확인
 
-# Step 1: 웹 앱 빌드 (React → dist/ 폴더)
-npm run build
+### Step 2: USB 디버깅 활성화
+1. **[설정]** → **[개발자 옵션]** 진입 (이제 메뉴에 보임)
+2. **[USB 디버깅]** 스위치를 **켬(ON)**
 
-# Step 2: iOS 네이티브 프로젝트에 웹 에셋 동기화
-npx cap sync ios
+### Step 3: PC에 기기 연결 및 Android Studio에서 선택 (방법 1)
+1. USB 케이블로 안드로이드 폰을 PC에 연결합니다.
+2. 안드로이드 폰 화면에 **"USB 디버깅을 허용하시겠습니까?"** 팝업이 뜨면 **[허용]** 을 누릅니다.
+3. Android Studio 상단 기기 드롭다운에 **연결된 기기 이름**이 표시됩니다.
+4. 기기를 선택하고 **▶ (Run) 버튼** 클릭 → 빌드 및 설치 시작
 
-# Step 3: Xcode에서 ▶ 버튼 눌러 재빌드 및 설치
-# (또는 이미 Xcode가 열려있다면 Cmd+R)
-```
+### 방법 2: APK 파일 생성 후 설치 (케이블 없이 공유 가능)
+케이블 연결 없이 파일을 전송하여 설치하고 싶을 때 사용합니다.
 
-> 💡 **팁**: `server.url`에 AWS 실서버 주소를 설정한 경우, 프론트엔드를 AWS에 새로 배포하면 Xcode 재빌드 없이도 앱에서 변경 사항이 자동 반영됩니다!
-> 이는 하이브리드 앱의 가장 큰 장점으로, 앱스토어 심사 없이 실시간 업데이트가 가능합니다.
+1. Android Studio 상단 메뉴: **Build → Build Bundle(s) / APK(s) → Build APK(s)** 클릭
+2. 오른쪽 하단에 `Build APK(s): APK(s) generated successfully` 알림이 뜨면 **[locate]** 클릭
+3. 열린 폴더의 `app-debug.apk` 파일을 카카오톡, 이메일 등을 통해 폰으로 전송
+4. 폰에서 파일을 실행하여 설치 (출처를 알 수 없는 앱 설치 허용 필요)
 
-### Xcode DerivedData(빌드 캐시) 초기화 (문제 발생 시)
-설정을 바꾸었는데도 이전 설정이 계속 적용되는 경우 캐시를 초기화합니다.
-
-**방법 1 (Xcode 내)**
-- 단축키: `Cmd(⌘) + Shift(⇧) + K` → "Clean Build Folder"
-
-**방법 2 (터미널)**
-```bash
-rm -rf ~/Library/Developer/Xcode/DerivedData/*
-```
-
-캐시 초기화 후 첫 빌드는 Swift 패키지를 새로 다운로드하므로 **2~5분** 정도 시간이 걸립니다.
+### Step 4: 첫 실행 시 확인
+앱이 설치되고 나면 별도의 '신뢰' 처리 없이 바로 실행됩니다. (iOS와 달리 Android는 이 과정이 없습니다.)
 
 ---
 
-## 10. 알려진 이슈 및 FAQ
+## 12. 코드 수정 후 앱 업데이트 절차
+
+하이브리드 앱의 최대 장점은 모든 수정을 매번 동기화할 필요가 없다는 것입니다.
+
+### ❓ `npx cap sync`가 매번 필요한가요?
+
+| 수정 사항 | `sync` 필요 여부 | 이유 |
+|-----------|------------------|------|
+| **웹 코드 (React, CSS)** | **필요 없음** | `server.url` 설정 덕분에 AWS 배포 시 실시간 반영됨 |
+| **플러그인 추가/삭제** | **필수** | 네이티브 라이브러리 연결이 필요함 |
+| **config.json 수정** | **필수** | 앱 이름, 서버 주소 등 핵심 설정 반영 |
+| **아이콘, 이미지 변경** | **필수** | 네이티브 리소스 업데이트 필요 |
+
+### 업데이트 작업 순서 (네이티브 변경 시)
+
+```bash
+# 1. (필요시) 웹 앱 빌드
+npm run build
+
+# 2. 플랫폼 동기화 (전체 플랫폼 한 번에)
+npx cap sync
+
+# 3. Xcode 또는 Android Studio에서 실행
+# iOS: npx cap open ios 후 재생 버튼
+# Android: npx cap open android 후 재생 버튼
+```
+
+> 💡 **한꺼번에 동기화**: `npx cap sync ios` 대신 그냥 `npx cap sync`를 치면 추가된 모든 플랫폼(iOS, Android)이 한 번에 동기화됩니다.
+
+---
+
+## 13. 검증 체크리스트
+
+### 기능 검증 (플랫폼 무관)
+- [ ] 로그인 / 로그아웃 정상 작동
+- [ ] GPS 위치 수집 및 백엔드 전송 확인
+- [ ] 네이버 지도 정상 표시
+- [ ] 챗봇(AI) 응답 정상 작동
+- [ ] WebSocket 실시간 채팅 작동
+- [ ] 공지사항 조회
+- [ ] 참석자 명단 조회
+- [ ] 위치 송신 시작/중단 버튼 정상 작동
+
+### iOS 전용 확인 사항
+- [ ] 위치 권한 팝업 정상 표시 ("위치 정보를 사용하겠습니까?")
+- [ ] 이모지(이모티콘) 정상 표시 (실기기에서만 확인 가능)
+- [ ] 지도 정상 표시 (server.url 설정 후)
+- [ ] 앱 신뢰 처리 완료
+- [ ] ATS 정책 준수 (모든 API 통신이 HTTPS)
+
+### Android 전용 확인 사항
+- [ ] 위치 권한 팝업 정상 표시
+- [ ] 지도 정상 표시
+- [ ] WebSocket 연결 유지 (백그라운드 시)
+
+### 웹 브라우저 확인 사항
+- [ ] PC 크롬에서 GPS Fallback 작동 (브라우저 위치 권한 허용 후)
+- [ ] 모바일 사파리/크롬에서 GPS 정상 작동
+- [ ] "Not implemented on web" 에러 미발생 확인
+
+---
+
+## 14. 알려진 이슈 및 FAQ
 
 ### ❓ 시뮬레이터에서 이모지(이모티콘)가 `[?]`로 깨져 보여요.
 - **원인**: 설치된 iOS 26.3 시뮬레이터 런타임 내부에 `AppleColorEmoji.ttc` 폰트 파일이 누락된 애플 자체 버그입니다.
@@ -382,14 +518,23 @@ npm run build
 # iOS 동기화 (코드 수정 후 필수)
 npx cap sync ios
 
+# Android 동기화 (코드 수정 후 필수)
+npx cap sync android
+
 # Xcode 열기
 npx cap open ios
 
-# 개발 서버 실행 (실기기 로컬 테스트용)
+# Android Studio 열기
+npx cap open android
+
+# 개발 서버 실행 (로컬 실기기 테스트용)
 npm run dev -- --host
 
 # Xcode 빌드 캐시 초기화
 rm -rf ~/Library/Developer/Xcode/DerivedData/*
+
+# Android 연결 기기 확인
+adb devices
 ```
 
 ---
@@ -405,6 +550,10 @@ PSF_APP/
 │       └── App/
 │           ├── Info.plist      ← iOS 앱 권한 설정 (위치 권한 등)
 │           └── public/         ← npm run build + npx cap sync 결과물
+├── android/                    ← Android Studio 네이티브 프로젝트 (npx cap add android로 생성)
+│   └── app/
+│       └── src/main/
+│           └── AndroidManifest.xml  ← Android 권한 설정 (Capacitor가 자동 추가)
 ├── src/
 │   ├── context/
 │   │   └── AppContext.jsx      ← GPS 전송 로직 (Capacitor + Web Fallback 적용)
